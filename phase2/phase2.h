@@ -29,7 +29,7 @@ extern  int 	P2_DiskSize(int unit, int *sector, int *track, int *disk);
 
 extern  int     P2_Spawn(char *name, int (*func)(void *arg), void *arg, int stackSize, int priority);
 extern  int     P2_Wait(int *status);
-extern  int     P2_Terminate(int status);
+extern  void    P2_Terminate(int status);
 
 extern	int 	P3_Startup(void *);
 

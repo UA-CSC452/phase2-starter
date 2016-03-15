@@ -106,7 +106,7 @@ tests: $(TOUTS)
 	./$< 1> $@ 2>&1
 
 $(TESTS):   %: $(TARGET) %.o
-	$(LD) $(LDFLAGS) -o $@ $@.o $(LIBFLAGS)
+	- $(LD) $(LDFLAGS) -o $@ $@.o $(LIBFLAGS)
 
 clean:
 	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests/*.out
