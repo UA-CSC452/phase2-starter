@@ -26,3 +26,11 @@ int P3_Startup(void *arg) {
 	USLOSS_Console("You passed the test! Treat yourself to a cookie!\n");
 	return 7;
 }
+
+void setup(void) {
+    // Do nothing.
+}
+
+void cleanup(void) {
+    // Do nothing.
+}
