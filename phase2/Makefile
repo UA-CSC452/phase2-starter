@@ -26,7 +26,7 @@ endif
 USLOSS_VERSION = 2.12
 
 # Set to version of Phase 1 you want to use.
-PHASE1_VERSION = 1.2
+PHASE1_VERSION = 1.3
 
 #Set to the version of the user library you want to use.
 USER_VERSION = 1.2
@@ -105,7 +105,7 @@ tests: $(TOUTS)
 %.out: %
 	./$< 1> $@ 2>&1
 
-$(TESTS):   %: $(TARGET) %.o
+$(TESTS):   %: $(TARGET) %.o Makefile
 	- $(LD) $(LDFLAGS) -o $@ $@.o $(LIBFLAGS)
 
 clean:
