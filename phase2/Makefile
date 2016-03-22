@@ -26,7 +26,7 @@ endif
 USLOSS_VERSION = 2.12
 
 # Set to version of Phase 1 you want to use.
-PHASE1_VERSION = 1.1
+PHASE1_VERSION = 1.2
 
 #Set to the version of the user library you want to use.
 USER_VERSION = 1.2
