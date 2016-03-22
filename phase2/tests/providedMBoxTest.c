@@ -18,7 +18,6 @@ int Recvr(void *arg) {
         assert(result == 0);
         assert(size == sizeof(int));
         assert((buf >= 0 && buf < 10));
-        i++;
     }
     return 0;
 }
