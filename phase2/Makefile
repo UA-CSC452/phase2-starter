@@ -26,7 +26,7 @@ endif
 USLOSS_VERSION = 2.12
 
 # Set to version of Phase 1 you want to use.
-PHASE1_VERSION = 1.3
+PHASE1_VERSION = 1.4
 
 #Set to the version of the user library you want to use.
 USER_VERSION = 1.2
@@ -77,11 +77,15 @@ TVS = ${TESTS:=.v}
 
 # The following is to deal with circular dependencies between the USLOSS and phase1
 # libraries. Unfortunately the linkers handle this differently on the two OSes.
+# Also add flags to warn about duplicate global variables and to make warnings fatal.
 
 ifeq ($(OS), macosx)
 	LIBFLAGS = -Wl,-all_load $(LIBS)
+	# The following only works for dynamic libraries. TODO make it work with static.
+	LDFLAGS += -Wl, -warn_common -Wl,-fatal_warnings
 else
 	LIBFLAGS = -Wl,--start-group $(LIBS) -Wl,--end-group
+	LDFLAGS +=  -Wl,--warn-common -Wl,--fatal-warnings
 endif
 
 %.d: %.c
