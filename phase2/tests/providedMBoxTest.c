@@ -40,6 +40,7 @@ P3_Startup(void *arg)
     int result;
     int i;
     char name[30];
+    int status;
 
     result = Sys_MboxCreate(100, 4, &mbox);
     assert(mbox != -1);
@@ -57,15 +58,16 @@ P3_Startup(void *arg)
         assert(result == 0);
     }
     for (i = 0; i < 6; i++) {
-        Sys_Wait(&pid, &result);
+        result = Sys_Wait(&pid, &status);
+        assert(result == 0);
     }
     return 0;
 }
 
-void setup(void) {
+void test_setup(int argc, char **argv) {
     // Do nothing.
 }
 
-void cleanup(void) {
+void test_cleanup(int argc, char **argv) {
     // Do nothing.
 }

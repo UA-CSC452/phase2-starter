@@ -36,10 +36,10 @@ int P3_Startup(void *arg) {
 	return 7;
 }
 
-void setup(void) {
+void test_setup(int argc, char **argv) {
     // Do nothing.
 }
 
-void cleanup(void) {
+void test_cleanup(int argc, char **argv) {
     // Do nothing.
 }

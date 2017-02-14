@@ -1,6 +1,8 @@
 /*
  * These are the definitions for phase0 of the project (the kernel).
  * DO NOT MODIFY THIS FILE.
+ *
+ * Version: 2.0
  */
 
 #ifndef _PHASE2_H

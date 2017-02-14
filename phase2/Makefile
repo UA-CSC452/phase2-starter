@@ -1,10 +1,8 @@
-# This is a sample Makefile for Phase 2. It provides the following targets 
-# (assumes test source files are named testN.c)
-# You may change this, e.g. to add new test cases, but keep in mind we will compile
-# your solution using our own copy of this file.
+# Version 2.0
+# This is a sample Makefile for Phase 2. 
 #
-#	make		(makes libphase1.a and all tests)
-#        make phase1     ditto
+#	make		(makes libphase2.a and all tests)
+#   make phase2 ditto
 #
 #	make testN 	(makes testN)
 #	make testN.out	(runs testN and puts output in testN.out)
@@ -16,43 +14,49 @@
 #
 #	make clean	(removes all files created by this Makefile)
 
-ifndef CS452_STUDENTS
-	452-STUDENTS = $(HOME)/Dropbox/452-students
-else
-	452-STUDENTS = $(CS452_STUDENTS)
+ifndef PREFIX
+	PREFIX = $(HOME)
 endif
 
-# Set to version of USLOSS you want to use.
-USLOSS_VERSION = 2.12
+# Set to Phase 2 version
+PHASE2_VERSION = 2.0
 
-# Set to version of Phase 1 you want to use.
-PHASE1_VERSION = 1.4
+# Set to USLOSS version
+USLOSS_VERSION = 3.0
 
-#Set to the version of the user library you want to use.
-USER_VERSION = 1.2
+# Set to Phase 1 version
+PHASE1_VERSION = 1.2
 
+# Set to user library version
+USER_VERSION = 1.0
+
+# All .c files in this directory are included in the Phase 2 library.
 SRCS = $(wildcard *.c)
 
-# Add any tests here. If the test is named test0 then the source file is assumed to be test0.c.
+# Each .c file in the tests subdirectory is a separate test case.
 TESTS = $(patsubst %.c,%,$(wildcard tests/*.c))
 
 # Change this if you want to change the arguments to valgrind.
 VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
 
 # Change this if you need to link against additional libraries (probably not).
-LIBS = -lphase$(PHASE1_VERSION) -lusloss$(USLOSS_VERSION) -lphase2 -luser$(USER_VERSION)
+LIBS = -lphase$(PHASE1_VERSION) -lusloss$(USLOSS_VERSION) -lphase$(PHASE2_VERSION) -luser$(USER_VERSION)
 
 # Change this if you want change which flags are passed to the C compiler.
-CFLAGS += -Wall -g
+CFLAGS += -Wall -g -std=gnu99
 CFLAGS += -DDEBUG
 
 # You shouldn't need to change anything below here. 
 
+LIB_DIR = $(PREFIX)/lib
+INC_DIR	= $(PREFIX)/include
+INSTALL_DATA = /usr/bin/install -c
+
 PHASE = phase2
 
-TARGET = lib$(PHASE).a
+TARGET = libphase$(PHASE2_VERSION).a
 
-INCLUDES = -I$(452-STUDENTS)/include -I.
+INCLUDES = -I$(INC_DIR) -I.
 
 ifeq ($(shell uname),Darwin)
 	DEFINES += -D_XOPEN_SOURCE
@@ -66,14 +70,15 @@ endif
 CC=gcc
 LD=gcc
 AR=ar    
-CFLAGS += $(INCLUDES) $(DEFINES)
-LDFLAGS = -L$(452-STUDENTS)/lib/$(OS) -L.
+CFLAGS += $(INCLUDES) $(DEFINES) -Werror
+LDFLAGS = -L$(LIB_DIR) -L.
 COBJS = ${SRCS:.c=.o}
 DEPS = ${COBJS:.o=.d}
 TSRCS = {$TESTS:=.c}
 TOBJS = ${TESTS:=.o}
 TOUTS = ${TESTS:=.out}
 TVS = ${TESTS:=.v}
+STUBS = p3/p3stubs.o
 
 # The following is to deal with circular dependencies between the USLOSS and phase1
 # libraries. Unfortunately the linkers handle this differently on the two OSes.
@@ -109,11 +114,11 @@ tests: $(TOUTS)
 %.out: %
 	./$< 1> $@ 2>&1
 
-$(TESTS):   %: $(TARGET) %.o Makefile
-	- $(LD) $(LDFLAGS) -o $@ $@.o $(LIBFLAGS)
+$(TESTS):   %: $(TARGET) %.o $(STUBS) Makefile
+	- $(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(LIBFLAGS)
 
 clean:
-	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests/*.out
+	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests/*.out p3/*.o p3/p3stubsTest
 
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
@@ -122,5 +127,8 @@ valgrind: $(TVS)
 
 %.v: %
 	valgrind $(VGFLAGS) ./$< 1> $@ 2>&1
+
+p3/p3stubsTest: $(STUBS) p3/p3stubsTest.o
+	$(LD) $(LDFLAGS) -o $@ $^
 
 -include $(DEPS)

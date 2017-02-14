@@ -1,3 +1,13 @@
+/* ------------------------------------------------------------------------
+   phase2.c
+   Version: 2.0
+
+   Skeleton file for Phase 2. These routines are very incomplete and are
+   intended to give you a starting point. Feel free to use this or not.
+
+
+   ------------------------------------------------------------------------ */
+
 #include <stdlib.h>
 #include <usloss.h>
 #include <phase1.h>
@@ -12,8 +22,8 @@ P2_Startup(void *arg)
 {
     P1_Semaphore      running;
     int               status;
-    int               pid;
-    int               clockPID;
+    int               result = 1; // default is there was a problem
+    int               rc;
     /*
      * Check kernel mode
      */
@@ -22,15 +32,24 @@ P2_Startup(void *arg)
     /*
      * Create clock device driver 
      */
-    running = P1_SemCreate(0);
-    clockPID = P1_Fork("Clock driver", ClockDriver, (void *) running, USLOSS_MIN_STACK, 2);
-    if (clockPID == -1) {
+    rc = P1_SemCreate("running", 0, &running);
+    if (rc != 0) {
+        USLOSS_Console("P1_SemCreate of running failed: %d\n", rc);
+        goto done;
+    }
+    rc = P1_Fork("Clock driver", ClockDriver, (void *) running, USLOSS_MIN_STACK, 2, 0);
+    if (rc < 0) {
         USLOSS_Console("Can't create clock driver\n");
+        goto done;
     }
     /*
      * Wait for the clock driver to start.
      */
-    P1_P(running);
+    rc = P1_P(running);
+    if (rc != 0) {
+        USLOSS_Console("P1_P(running) failed: %d\n", rc);
+        goto done;
+    }
     /*
      * Create the other device drivers.
      */
@@ -41,47 +60,72 @@ P2_Startup(void *arg)
      * and P2_Wait are assumed to be the kernel-level functions that implement the Spawn and 
      * Wait system calls, respectively (you can't invoke a system call from the kernel).
      */
-    pid = P2_Spawn("P3_Startup", P3_Startup, NULL,  4 * USLOSS_MIN_STACK, 3);
-    pid = P2_Wait(&status);
+    rc = P2_Spawn("P3_Startup", P3_Startup, NULL,  4 * USLOSS_MIN_STACK, 3);
+    if (rc < 0) {
+        USLOSS_Console("Spawn of P3_Startup failed: %d\n", rc);
+        goto done;
+    }
+    rc = P2_Wait(&status);
+    if (rc < 0) {
+        USLOSS_Console("Wait for P3_Startup failed: %d\n", rc);
+        goto done;
+    }
 
 
     /*
-     * Kill the device drivers
+     * Make the device drivers quit using P1_WakeupDevice.
      */
-    P1_Kill(clockPID);
     // ...
 
     /*
      * Join with the device drivers.
      */
     // ...
-    return 0;
+
+    result = 0;
+done:
+    return result;
 }
 
 static int
 ClockDriver(void *arg)
 {
     P1_Semaphore running = (P1_Semaphore) arg;
-    int result;
-    int status;
-    int rc = 0;
+    int result = 1; // default is there was a problem
+    int dummy;
+    int rc; // return codes from functions we call
 
     /*
      * Let the parent know we are running and enable interrupts.
      */
-    P1_V(running);
-    USLOSS_PsrSet(USLOSS_PsrGet() | USLOSS_PSR_CURRENT_INT);
+    rc = P1_V(running);
+    if (rc != 0) {
+        USLOSS_Console("ClockDriver: P_V(running) returned %d\n", rc);
+        goto done;
+    }
+    rc = USLOSS_PsrSet(USLOSS_PsrGet() | USLOSS_PSR_CURRENT_INT);
+    if (rc != 0) {
+        USLOSS_Console("ClockDriver: USLOSS_PsrSet returned %d\n", rc);
+        goto done;
+    }
     while(1) {
-        result = P1_WaitDevice(USLOSS_CLOCK_DEV, 0, &status);
-        if (result != 0) {
-            rc = 1;
+        /*
+         * Read new sleep requests from the clock mailbox and update the bookkeeping appropriately.
+         */
+        rc = P1_WaitDevice(USLOSS_CLOCK_DEV, 0, &dummy);
+        if (rc == -3) { // aborted
+            USLOSS_Console("ClockDriver: aborted\n");
+            break;
+        } else if (rc != 0) {
+            USLOSS_Console("ClockDriver: P1_WaitDevice returned %d\n", rc);
             goto done;
         }
         /*
          * Compute the current time and wake up any processes
-         * whose time has come.
+         * that are done sleeping by sending them a response.
          */
     }
+    result = 0; // if we get here then everything is ok
 done:
     return rc; 
 }
