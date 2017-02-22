@@ -28,7 +28,7 @@ PHASE2_VERSION = 2.0
 USLOSS_VERSION = 3.3
 
 # Set to Phase 1 version
-PHASE1_VERSION = 1.2
+PHASE1_VERSION = 1.3
 
 # Set to user library version (same as USLOSS version by default)
 USER_VERSION = $(USLOSS_VERSION)
