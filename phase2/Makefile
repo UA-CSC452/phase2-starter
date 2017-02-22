@@ -18,23 +18,26 @@ ifndef PREFIX
 	PREFIX = $(HOME)
 endif
 
+# Set to the part (A or B) of the phase.
+PART = A
+
 # Set to Phase 2 version
 PHASE2_VERSION = 2.0
 
 # Set to USLOSS version
-USLOSS_VERSION = 3.0
+USLOSS_VERSION = 3.3
 
 # Set to Phase 1 version
 PHASE1_VERSION = 1.2
 
-# Set to user library version
-USER_VERSION = 1.0
+# Set to user library version (same as USLOSS version by default)
+USER_VERSION = $(USLOSS_VERSION)
 
 # All .c files in this directory are included in the Phase 2 library.
 SRCS = $(wildcard *.c)
 
-# Each .c file in the tests subdirectory is a separate test case.
-TESTS = $(patsubst %.c,%,$(wildcard tests/*.c))
+# Each .c file in the tests$(PART) subdirectory is a separate test case.
+TESTS = $(patsubst %.c,%,$(wildcard tests$(PART)/*.c))
 
 # Change this if you want to change the arguments to valgrind.
 VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
@@ -96,6 +99,8 @@ endif
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
 
+.PHONY: all tests $(PHASE)
+
 all: $(PHASE)
 
 $(PHASE): $(TARGET) $(TESTS)
@@ -118,7 +123,7 @@ $(TESTS):   %: $(TARGET) %.o $(STUBS) Makefile
 	- $(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(LIBFLAGS)
 
 clean:
-	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests/*.out p3/*.o p3/p3stubsTest
+	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests$(PART)/*.out p3/*.o p3/p3stubsTest
 
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
