@@ -130,3 +130,16 @@ done:
     return rc; 
 }
 
+int     
+P2_Spawn(char *name, int (*func)(void *arg), void *arg, int stackSize, 
+                         int priority) 
+{
+    return -1;
+}
+
+int     
+P2_Wait(int *status) 
+{
+    return -1;
+}
+
