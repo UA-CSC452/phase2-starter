@@ -22,7 +22,7 @@ endif
 PART = A
 
 # Set to Phase 2 version
-PHASE2_VERSION = 2.0
+PHASE2_VERSION = 2.1
 
 # Set to USLOSS version
 USLOSS_VERSION = 3.3
