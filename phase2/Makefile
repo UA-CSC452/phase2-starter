@@ -22,13 +22,13 @@ endif
 PART = A
 
 # Set to Phase 2 version
-PHASE2_VERSION = 2.1
+PHASE2_VERSION = 2.2
 
 # Set to USLOSS version
 USLOSS_VERSION = 3.3
 
 # Set to Phase 1 version
-PHASE1_VERSION = 1.3
+PHASE1_VERSION = 1.6
 
 # Set to user library version (same as USLOSS version by default)
 USER_VERSION = $(USLOSS_VERSION)

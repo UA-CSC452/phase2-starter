@@ -16,11 +16,11 @@
 static int ClockDriver(void *arg);
 int P2_Spawn(char *name, int(*func)(void *), void *arg, int stackSize, int priority);
 int P2_Wait(int *status);
+static P1_Semaphore running;
 
 int
 P2_Startup(void *arg)
 {
-    P1_Semaphore      running;
     int               status;
     int               result = 1; // default is there was a problem
     int               rc;
@@ -30,25 +30,27 @@ P2_Startup(void *arg)
     // ...
 
     /*
-     * Create clock device driver 
+     * Create clock device drivers.
      */
     rc = P1_SemCreate("running", 0, &running);
     if (rc != 0) {
         USLOSS_Console("P1_SemCreate of running failed: %d\n", rc);
         goto done;
     }
-    rc = P1_Fork("Clock driver", ClockDriver, (void *) running, USLOSS_MIN_STACK, 2, 0);
-    if (rc < 0) {
-        USLOSS_Console("Can't create clock driver\n");
-        goto done;
-    }
-    /*
-     * Wait for the clock driver to start.
-     */
-    rc = P1_P(running);
-    if (rc != 0) {
-        USLOSS_Console("P1_P(running) failed: %d\n", rc);
-        goto done;
+    for (int i = 0; i < USLOSS_CLOCK_UNITS; i++) {
+        rc = P1_Fork("Clock driver", ClockDriver, (void *) i, USLOSS_MIN_STACK, 2, 0);
+        if (rc < 0) {
+            USLOSS_Console("Can't create clock driver\n");
+            goto done;
+        }
+        /*
+         * Wait for the clock driver to start.
+         */
+        rc = P1_P(running);
+        if (rc != 0) {
+            USLOSS_Console("P1_P(running) failed: %d\n", rc);
+            goto done;
+        }
     }
     /*
      * Create the other device drivers.
@@ -63,18 +65,27 @@ P2_Startup(void *arg)
     rc = P2_Spawn("P3_Startup", P3_Startup, NULL,  4 * USLOSS_MIN_STACK, 3);
     if (rc < 0) {
         USLOSS_Console("Spawn of P3_Startup failed: %d\n", rc);
-        goto done;
-    }
-    rc = P2_Wait(&status);
-    if (rc < 0) {
-        USLOSS_Console("Wait for P3_Startup failed: %d\n", rc);
-        goto done;
+    } else {
+        rc = P2_Wait(&status);
+        if (rc < 0) {
+            USLOSS_Console("Wait for P3_Startup failed: %d\n", rc);
+            goto done;
+        }
     }
 
 
     /*
-     * Make the device drivers quit using P1_WakeupDevice.
+     * Make the device drivers abort using P1_WakeupDevice.
      */
+
+    for (int i = 0; i < USLOSS_CLOCK_UNITS; i++) {
+        rc = P1_WakeupDevice(USLOSS_CLOCK_DEV, i, 1);
+        if (rc < 0) {
+            USLOSS_Console("Wakeup of clock device driver failed : %d\n", rc);
+            goto done;
+        }
+    }
+
     // ...
 
     /*
@@ -90,7 +101,7 @@ done:
 static int
 ClockDriver(void *arg)
 {
-    P1_Semaphore running = (P1_Semaphore) arg;
+    int unit = (int) arg;
     int result = 1; // default is there was a problem
     int dummy;
     int rc; // return codes from functions we call
@@ -100,7 +111,6 @@ ClockDriver(void *arg)
      */
     rc = P1_V(running);
     if (rc != 0) {
-        USLOSS_Console("ClockDriver: P_V(running) returned %d\n", rc);
         goto done;
     }
     rc = USLOSS_PsrSet(USLOSS_PsrGet() | USLOSS_PSR_CURRENT_INT);
@@ -112,9 +122,8 @@ ClockDriver(void *arg)
         /*
          * Read new sleep requests from the clock mailbox and update the bookkeeping appropriately.
          */
-        rc = P1_WaitDevice(USLOSS_CLOCK_DEV, 0, &dummy);
+        rc = P1_WaitDevice(USLOSS_CLOCK_DEV, unit, &dummy);
         if (rc == -3) { // aborted
-            USLOSS_Console("ClockDriver: aborted\n");
             break;
         } else if (rc != 0) {
             USLOSS_Console("ClockDriver: P1_WaitDevice returned %d\n", rc);
