@@ -19,16 +19,16 @@ ifndef PREFIX
 endif
 
 # Set to the part (A or B) of the phase.
-PART = A
+PART = B
 
 # Set to Phase 2 version
-PHASE2_VERSION = 2.2
+PHASE2_VERSION = 2.3
 
 # Set to USLOSS version
 USLOSS_VERSION = 3.3
 
 # Set to Phase 1 version
-PHASE1_VERSION = 1.6
+PHASE1_VERSION = 1.7
 
 # Set to user library version (same as USLOSS version by default)
 USER_VERSION = $(USLOSS_VERSION)
@@ -43,7 +43,8 @@ TESTS = $(patsubst %.c,%,$(wildcard tests$(PART)/*.c))
 VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
 
 # Change this if you need to link against additional libraries (probably not).
-LIBS = -lphase$(PHASE1_VERSION) -lusloss$(USLOSS_VERSION) -lphase$(PHASE2_VERSION) -luser$(USER_VERSION)
+LIBS = -lphase$(PHASE1_VERSION) -lusloss$(USLOSS_VERSION) -lphase$(PHASE2_VERSION) \
+-luser$(USER_VERSION) -ldisk$(USLOSS_VERSION)
 
 # Change this if you want change which flags are passed to the C compiler.
 CFLAGS += -Wall -g -std=gnu99
