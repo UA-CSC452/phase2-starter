@@ -22,10 +22,10 @@ endif
 PART = B
 
 # Set to Phase 2 version
-PHASE2_VERSION = 2.3
+PHASE2_VERSION = 2.4
 
 # Set to USLOSS version
-USLOSS_VERSION = 3.3
+USLOSS_VERSION = 3.5
 
 # Set to Phase 1 version
 PHASE1_VERSION = 1.7
@@ -37,7 +37,7 @@ USER_VERSION = $(USLOSS_VERSION)
 SRCS = $(wildcard *.c)
 
 # Each .c file in the tests$(PART) subdirectory is a separate test case.
-TESTS = $(patsubst %.c,%,$(wildcard tests$(PART)/*.c))
+TESTS = $(patsubst %.c,%,$(wildcard tests$(PART)/test*.c))
 
 # Change this if you want to change the arguments to valgrind.
 VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
@@ -82,6 +82,7 @@ TSRCS = {$TESTS:=.c}
 TOBJS = ${TESTS:=.o}
 TOUTS = ${TESTS:=.out}
 TVS = ${TESTS:=.v}
+THELPERS = tests$(PART)/helpers.o
 STUBS = p3/p3stubs.o
 
 # The following is to deal with circular dependencies between the USLOSS and phase1
@@ -110,6 +111,7 @@ $(PHASE): $(TARGET) $(TESTS)
 $(TARGET):  $(COBJS)
 	$(AR) -r $@ $^
 
+.NOTPARALLEL: tests # tests cannot be run in parallel
 tests: $(TOUTS)
 
 # Remove implicit rules so that "make phaseN" doesn't try to build it from phaseN.c or phaseN.o
@@ -120,11 +122,11 @@ tests: $(TOUTS)
 %.out: %
 	./$< 1> $@ 2>&1
 
-$(TESTS):   %: $(TARGET) %.o $(STUBS) Makefile
-	- $(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(LIBFLAGS)
+$(TESTS):   %: $(TARGET) %.o $(STUBS) Makefile $(THELPERS)
+	- $(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(THELPERS) $(LIBFLAGS)
 
 clean:
-	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests$(PART)/*.out p3/*.o p3/p3stubsTest
+	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests$(PART)/*.out p3/*.o p3/p3stubsTest tests$(PART)/*.o
 
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
