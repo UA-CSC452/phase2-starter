@@ -8,14 +8,6 @@
 #ifndef _PHASE2_H
 #define _PHASE2_H
 
-/*
- * Maximum line length
- */
-
-#define P2_MAX_LINE	72
-
-#define P2_MAX_MBOX 	200
-
 /* 
  * Function prototypes for this phase.
  */
@@ -26,25 +18,34 @@
 
 extern  int	    P2_Sleep(int seconds) CHECKRETURN;
 
-extern	int	    P2_TermRead(int unit, int size, char *buffer) CHECKRETURN;
-extern  int	    P2_TermWrite(int unit, int size, char *text) CHECKRETURN;
 
 extern  int     P2_DiskRead(int unit, int track, int first, int sectors, void *buffer) CHECKRETURN;
 extern  int	    P2_DiskWrite(int unit, int track, int first, int sectors, void *buffer) CHECKRETURN;
 extern  int 	P2_DiskSize(int unit, int *sector, int *track, int *disk) CHECKRETURN;
 
 extern  int     P2_Spawn(char *name, int (*func)(void *arg), void *arg, int stackSize, 
-                         int priority) CHECKRETURN;
-extern  int     P2_Wait(int *status) CHECKRETURN;
+                         int priority, int *pid) CHECKRETURN;
+extern  int     P2_Wait(int *pid, int *status) CHECKRETURN;
 extern  void    P2_Terminate(int status);
+extern  int     P2_SetSyscallHandler(unsigned int number, 
+                        void (*handler)(USLOSS_Sysargs *args)) CHECKRETURN;
 
 extern	int 	P3_Startup(void *) CHECKRETURN;
 
-extern	int     P2_MboxCreate(int slots, int size) CHECKRETURN;
-extern	int	    P2_MboxRelease(int mbox) CHECKRETURN;
-extern	int	    P2_MboxSend(int mbox, void *msg, int *size) CHECKRETURN;
-extern	int	    P2_MboxCondSend(int mbox, void *msg, int *size) CHECKRETURN;
-extern  int	    P2_MboxReceive(int mbox, void *msg, int *size) CHECKRETURN;
-extern  int     P2_MboxCondReceive(int mbox, void *msg, int *size) CHECKRETURN;
 
-#endif /* _PHASE2_H */
+
+/*
+ * Phase 2 specific error codes
+ */
+
+
+#define P2_INVALID_SYSCALL      -20
+#define P2_INVALID_SECONDS      -21
+#define P2_INVALID_TRACK        -22
+#define P2_INVALID_FIRST        -23
+#define P2_INVALID_SECTORS      -24
+#define P2_NULL_ADDRESS         -25
+
+#endif
+
+

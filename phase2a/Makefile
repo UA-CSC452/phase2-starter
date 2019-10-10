@@ -1,8 +1,9 @@
-# Version 2.0
-# This is a sample Makefile for Phase 2. 
+# This is a sample Makefile for Phase 2.  
+# You may change this, e.g. to add new test cases, but keep in mind we will compile
+# your phase1.c using our own copy of this file.
 #
 #	make		(makes libphase2.a and all tests)
-#   make phase2 ditto
+#        make phase1     ditto
 #
 #	make testN 	(makes testN)
 #	make testN.out	(runs testN and puts output in testN.out)
@@ -18,49 +19,52 @@ ifndef PREFIX
 	PREFIX = $(HOME)
 endif
 
-# Set to the part (A or B) of the phase.
-PART = B
+PHASE = phase2a
 
-# Set to Phase 2 version
-PHASE2_VERSION = 2.4
+VERSION = 1.0
 
-# Set to USLOSS version
-USLOSS_VERSION = 3.5
+# Set to version of Phase1a you want to use.
+PHASE1A_VERSION = 1.0
 
-# Set to Phase 1 version
-PHASE1_VERSION = 1.7
+# Set to version of Phase1b you want to use.
+PHASE1B_VERSION = 1.1
 
-# Set to user library version (same as USLOSS version by default)
-USER_VERSION = $(USLOSS_VERSION)
+# Set to version of Phase1c you want to use.
+PHASE1C_VERSION = 1.0
 
-# All .c files in this directory are included in the Phase 2 library.
+# Set to version of Phase1d you want to use.
+PHASE1D_VERSION = 1.0
+
+# Set to version of USLOSS you want to use.
+USLOSS_VERSION = 3.7
+
+# Compile all C files in this directory.
 SRCS = $(wildcard *.c)
 
-# Each .c file in the tests$(PART) subdirectory is a separate test case.
-TESTS = $(patsubst %.c,%,$(wildcard tests$(PART)/test*.c))
+# Tests are in the "tests" directory.
+TESTS = $(patsubst %.c,%,$(wildcard tests/*.c))
 
 # Change this if you want to change the arguments to valgrind.
 VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
 
 # Change this if you need to link against additional libraries (probably not).
-LIBS = -lphase$(PHASE1_VERSION) -lusloss$(USLOSS_VERSION) -lphase$(PHASE2_VERSION) \
--luser$(USER_VERSION) -ldisk$(USLOSS_VERSION)
+LIBS = -lusloss$(USLOSS_VERSION) \
+	   -luser$(USLOSS_VERSION) \
+	   -lphase1a-$(PHASE1A_VERSION) \
+	   -lphase1b-$(PHASE1B_VERSION) \
+	   -lphase1c-$(PHASE1C_VERSION) \
+	   -lphase1d-$(PHASE1D_VERSION) \
+	   -l$(PHASE)-$(VERSION) 
 
 # Change this if you want change which flags are passed to the C compiler.
-CFLAGS += -Wall -g -std=gnu99
-CFLAGS += -DDEBUG
+CFLAGS += -Wall -g -std=gnu99 -Werror
+#CFLAGS += -DDEBUG
 
 # You shouldn't need to change anything below here. 
 
-LIB_DIR = $(PREFIX)/lib
-INC_DIR	= $(PREFIX)/include
-INSTALL_DATA = /usr/bin/install -c
+TARGET = lib$(PHASE)-$(VERSION).a
 
-PHASE = phase2
-
-TARGET = libphase$(PHASE2_VERSION).a
-
-INCLUDES = -I$(INC_DIR) -I.
+INCLUDES = -I. -I.. -I$(PREFIX)/include
 
 ifeq ($(shell uname),Darwin)
 	DEFINES += -D_XOPEN_SOURCE
@@ -69,39 +73,34 @@ ifeq ($(shell uname),Darwin)
 else
 	OS = linux
 	CFLAGS += -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-unused-but-set-variable
+	LDFLAGS += -static
 endif
 
 CC=gcc
 LD=gcc
 AR=ar    
-CFLAGS += $(INCLUDES) $(DEFINES) -Werror
-LDFLAGS = -L$(LIB_DIR) -L.
+CFLAGS += $(INCLUDES) $(DEFINES)
+LDFLAGS = -L. -L$(PREFIX)/cs452/lib -L$(PREFIX)/lib 
 COBJS = ${SRCS:.c=.o}
 DEPS = ${COBJS:.o=.d}
 TSRCS = {$TESTS:=.c}
 TOBJS = ${TESTS:=.o}
+TDEPS = ${TOBJS:.o=.d}
 TOUTS = ${TESTS:=.out}
 TVS = ${TESTS:=.v}
-THELPERS = tests$(PART)/helpers.o
-STUBS = p3/p3stubs.o
+STUBS = ../p3/p3stubs.o
 
 # The following is to deal with circular dependencies between the USLOSS and phase1
 # libraries. Unfortunately the linkers handle this differently on the two OSes.
-# Also add flags to warn about duplicate global variables and to make warnings fatal.
 
 ifeq ($(OS), macosx)
 	LIBFLAGS = -Wl,-all_load $(LIBS)
-	# The following only works for dynamic libraries. TODO make it work with static.
-	LDFLAGS += -Wl,-warn_commons -Wl,-fatal_warnings
 else
 	LIBFLAGS = -Wl,--start-group $(LIBS) -Wl,--end-group
-	LDFLAGS +=  -Wl,--warn-common -Wl,--fatal-warnings
 endif
 
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
-
-.PHONY: all tests $(PHASE)
 
 all: $(PHASE)
 
@@ -111,10 +110,13 @@ $(PHASE): $(TARGET) $(TESTS)
 $(TARGET):  $(COBJS)
 	$(AR) -r $@ $^
 
-.NOTPARALLEL: tests # tests cannot be run in parallel
+install: $(TARGET)
+	mkdir -p ~/lib
+	install $(TARGET) ~/lib
+	
 tests: $(TOUTS)
 
-# Remove implicit rules so that "make phaseN" doesn't try to build it from phaseN.c or phaseN.o
+# Remove implicit rules so that "make phase1" doesn't try to build it from phase1.c or phase1.o
 % : %.c
 
 % : %.o
@@ -122,11 +124,11 @@ tests: $(TOUTS)
 %.out: %
 	./$< 1> $@ 2>&1
 
-$(TESTS):   %: $(TARGET) %.o $(STUBS) Makefile $(THELPERS)
-	- $(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(THELPERS) $(LIBFLAGS)
+$(TESTS):   %: $(TARGET) %.o $(STUBS)
+	$(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(LIBFLAGS)
 
 clean:
-	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TVS) *.out tests$(PART)/*.out p3/*.o p3/p3stubsTest tests$(PART)/*.o
+	rm -f $(COBJS) $(TARGET) $(TOBJS) $(TESTS) $(DEPS) $(TDEPS) $(TVS) *.out tests/*.out tests/*.err
 
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
@@ -136,7 +138,8 @@ valgrind: $(TVS)
 %.v: %
 	valgrind $(VGFLAGS) ./$< 1> $@ 2>&1
 
-p3/p3stubsTest: $(STUBS) p3/p3stubsTest.o
+../p3/p3stubsTest: $(STUBS) ../p3/p3stubsTest.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
--include $(DEPS)
+-include $(DEPS) 
+-include $(TDEPS)

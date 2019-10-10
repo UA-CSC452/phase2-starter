@@ -43,3 +43,15 @@ P3_FreePageTable(int pid)
     myassert(allocated[pid] == 1);
     allocated[pid] = 0;
 }
+
+int
+P3_VmInit(int mappings, int pages, int frames, int pagers2)
+{
+    return 0;
+}
+
+void
+P3_VmDestroy(void)
+{
+    return;
+}
