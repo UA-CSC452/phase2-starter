@@ -15,7 +15,7 @@
 #include "tester.h"
 #include "phase2Int.h"
 
-static int passed = FALSE;
+static int passed = TRUE;
 
 static int childPid, p2Pid, p3Pid;
 
