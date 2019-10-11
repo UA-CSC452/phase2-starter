@@ -72,14 +72,13 @@ MakeName(char *prefix, int suffix)
 }
 
 #define PASSED() { \
-    passed = TRUE; \
 }
 
 #define FAILED(val, expected) { \
     USLOSS_Console("%s:%d: %d != %d.\n", __FUNCTION__, __LINE__, (val), (expected)); \
     USLOSS_Console("TEST FAILED.\n"); \
+    passed = FALSE; \
     USLOSS_Halt(0); \
-    USLOSS_Console("halt returned!\n"); \
 }
 
 #define TEST(val, expected) { \

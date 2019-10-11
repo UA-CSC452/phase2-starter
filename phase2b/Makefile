@@ -19,7 +19,7 @@ ifndef PREFIX
 	PREFIX = $(HOME)
 endif
 
-PHASE = phase2a
+PHASE = phase2b
 
 VERSION = 1.0
 
@@ -34,6 +34,9 @@ PHASE1C_VERSION = 1.0
 
 # Set to version of Phase1d you want to use.
 PHASE1D_VERSION = 1.2
+
+# Set to version of Phase2a you want to use.
+PHASE2A_VERSION = 1.0
 
 # Set to version of USLOSS you want to use.
 USLOSS_VERSION = 3.7
@@ -54,6 +57,7 @@ LIBS = -lusloss$(USLOSS_VERSION) \
 	   -lphase1b-$(PHASE1B_VERSION) \
 	   -lphase1c-$(PHASE1C_VERSION) \
 	   -lphase1d-$(PHASE1D_VERSION) \
+	   -lphase2a-$(PHASE2A_VERSION) \
 	   -l$(PHASE)-$(VERSION) 
 
 # Change this if you want change which flags are passed to the C compiler.

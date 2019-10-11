@@ -1,12 +1,13 @@
 /*
- * These are the definitions for phase0 of the project (the kernel).
+ * These are the definitions for Phase 2 of the project.
  * DO NOT MODIFY THIS FILE.
  *
- * Version: 2.0
  */
 
 #ifndef _PHASE2_H
 #define _PHASE2_H
+
+#include <usyscall.h>
 
 /* 
  * Function prototypes for this phase.
