@@ -10,7 +10,7 @@ all: $(SUBDIRS)
 subdirs: $(SUBDIRS)
 
 clean: $(SUBDIRS)
-	rm -f p3/*.o
+	rm -f p3/*.o term*.out
 
 install: $(SUBDIRS)
 	install $(HDRS) ~/include
