@@ -2,6 +2,8 @@
 /*
  * test_sleep.c
  */
+
+
 #include <assert.h>
 #include <usloss.h>
 #include <stdlib.h>
@@ -13,7 +15,7 @@
 
 #define NUM_SLEEPERS 10
 
-static int passed = TRUE;
+static int passed = FALSE;
 
 int Slept(int start, int end) {
     return (end - start) / 1000000;
