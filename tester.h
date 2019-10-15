@@ -74,6 +74,7 @@ MakeName(char *prefix, int suffix)
 }
 
 #define PASSED() { \
+    passed = TRUE; \
 }
 
 #define FAILED(val, expected) { \
