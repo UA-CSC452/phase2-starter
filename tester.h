@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <phase1.h>
+
 static char *states[] = {"Free", "Run", "Ready", "Quit", "Block", "Join"};
 
 static char *errors[] = {
