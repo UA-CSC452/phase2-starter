@@ -22,8 +22,6 @@ P2DiskInit(void)
 {
     int rc;
 
-    P2ClockInit();
-
     // initialize data structures here
 
     // install system call stubs here
