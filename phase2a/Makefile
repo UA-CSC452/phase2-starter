@@ -21,7 +21,7 @@ endif
 
 PHASE = phase2a
 
-VERSION = 1.0
+VERSION = 1.1
 
 # Set to version of Phase1a you want to use.
 PHASE1A_VERSION = 1.0

@@ -36,7 +36,7 @@ PHASE1C_VERSION = 1.0
 PHASE1D_VERSION = 1.2
 
 # Set to version of Phase2a you want to use.
-PHASE2A_VERSION = 1.0
+PHASE2A_VERSION = 1.1
 
 # Set to version of Phase2b you want to use.
 PHASE2B_VERSION = 1.0
@@ -56,6 +56,7 @@ VGFLAGS = --track-origins=yes --leak-check=full --max-stackframe=100000
 # Change this if you need to link against additional libraries (probably not).
 LIBS = -lusloss$(USLOSS_VERSION) \
 	   -luser$(USLOSS_VERSION) \
+	   -ldisk$(USLOSS_VERSION) \
 	   -lphase1a-$(PHASE1A_VERSION) \
 	   -lphase1b-$(PHASE1B_VERSION) \
 	   -lphase1c-$(PHASE1C_VERSION) \
