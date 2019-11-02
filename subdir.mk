@@ -15,6 +15,9 @@
 #
 #       make clean      (removes all files created by this Makefile)
 
+# sh is dash on lectura which breaks things
+SHELL = bash 
+
 ifndef PREFIX
         PREFIX = $(HOME)
 endif
