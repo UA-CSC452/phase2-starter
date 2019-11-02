@@ -10,15 +10,11 @@
 #include "phase2Int.h"
 
 static void     CreateStub(USLOSS_Sysargs *sysargs);
-static void     PStub(USLOSS_Sysargs *sysargs);
-static void     VStub(USLOSS_Sysargs *sysargs);
-static void     FreeStub(USLOSS_Sysargs *sysargs);
-static void     NameStub(USLOSS_Sysargs *sysargs);
 
 /*
  * I left this useful function here for you to use for debugging. If you add -DDEBUG to CFLAGS
  * this will produce output, otherwise it won't. The message is printed including the function
- * and line from which it was called. I don't remember while it is called "debug2".
+ * and line from which it was called. I don't remember why it is called "debug2".
  */
 
 static void debug2(char *fmt, ...)
