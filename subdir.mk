@@ -121,7 +121,7 @@ install: $(TARGET)
 	mkdir -p ~/lib
 	install $(TARGET) ~/lib
 
-.NOTPARRALEL: tests
+.NOTPARALLEL: tests
 tests: $(TOUTS)
 
 # Remove implicit rules so that "make phase1" doesn't try to build it from phase1.c or phase1.o
