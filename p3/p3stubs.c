@@ -51,7 +51,9 @@ P3_VmInit(int mappings, int pages, int frames, int pagers2)
 }
 
 void
-P3_VmDestroy(void)
+P3_VmShutdown(void)
 {
     return;
 }
+
+
