@@ -50,21 +50,27 @@ LIBS = -lusloss$(USLOSS_VERSION) \
 	   -lphase1c-$(PHASE1C_VERSION) \
 	   -lphase1d-$(PHASE1D_VERSION)
 
+LDFLAGS += -L. -L$(PREFIX)/cs452/lib -L$(PREFIX)/lib 
+
 ifeq ($(PHASE), phase2b)
 	LIBS += -lphase2a-$(PHASE2A_VERSION)
+	LDFLAGS += -L../phase2a
 else ifeq ($(PHASE), phase2c)
 	LIBS += -lphase2a-$(PHASE2A_VERSION)
 	LIBS += -lphase2b-$(PHASE2B_VERSION)
+	LDFLAGS += -L../phase2a -L../phase2b
 else ifeq ($(PHASE), phase2d)
 	LIBS += -lphase2a-$(PHASE2A_VERSION)
 	LIBS += -lphase2b-$(PHASE2B_VERSION)
 	LIBS += -lphase2c-$(PHASE2C_VERSION)
+	LDFLAGS += -L../phase2a -L../phase2b -L../phase2c
 endif
 
 LIBS += -l$(PHASE)-$(VERSION) 
 
 # Change this if you want change which flags are passed to the C compiler.
-CFLAGS += -Wall -g -std=gnu99 -Werror
+CFLAGS += -Wall -g -std=gnu99 -Werror -DPHASE=$(PHASE_UPPER) -D$(PHASE_UPPER) -DVERSION=$(VERSION) -DDATE="`date`"
+
 #CFLAGS += -DDEBUG
 
 # You shouldn't need to change anything below here. 
@@ -83,14 +89,16 @@ else
 	LDFLAGS += -static
 endif
 
+CFLAGS += -DOS=$(OS)
+
 CC=gcc
 LD=gcc
 AR=ar    
+RANLIB=ranlib 
 CFLAGS += $(INCLUDES) $(DEFINES)
-LDFLAGS = -L. -L$(PREFIX)/cs452/lib -L$(PREFIX)/lib 
 COBJS = ${SRCS:.c=.o}
 DEPS = ${COBJS:.o=.d}
-TSRCS = {$TESTS:=.c}
+TSRCS = ${TESTS:=.c}
 TOBJS = ${TESTS:=.o}
 TDEPS = ${TOBJS:.o=.d}
 TOUTS = ${TESTS:=.out}
