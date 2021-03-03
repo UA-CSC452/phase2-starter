@@ -16,8 +16,6 @@
 #include "tester.h"
 #include "phase2Int.h"
 
-static int passed = FALSE;
-
 #define MSG "This is a test."
 
 int P3_Startup(void *arg) {
@@ -25,14 +23,14 @@ int P3_Startup(void *arg) {
     strncpy(buffer, MSG, sizeof(buffer));
 
     USLOSS_Console("Write to the disk.\n");
-    int rc = Sys_DiskWrite(buffer, 0, 0, 1, 0);
+    int rc = Sys_DiskWrite(buffer, 0, 1, 0);
     USLOSS_Console("Verify that the disk write was successful.\n");
     assert(rc == P1_SUCCESS);
     USLOSS_Console("Wrote \"%s\".\n", buffer);
 
     bzero(buffer, sizeof(buffer));
     USLOSS_Console("Read from the disk.\n");
-    rc = Sys_DiskRead(buffer, 0, 0, 1, 0);
+    rc = Sys_DiskRead(buffer, 0, 1, 0);
     USLOSS_Console("Verify that the disk read was successful.\n");
     assert(rc == P1_SUCCESS);
     TEST(strcmp(MSG, buffer), 0);
@@ -41,12 +39,13 @@ int P3_Startup(void *arg) {
 }
 int P2_Startup(void *arg)
 {
-    int rc, waitPid, status, p3Pid;
+    int rc, waitPid = -1, status = 0, p3Pid = -2;
 
     P2ClockInit();
     P2DiskInit();
-    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 3, &p3Pid);
+    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 2, &p3Pid);
     TEST(rc, P1_SUCCESS);
+
     rc = P2_Wait(&waitPid, &status);
     TEST(rc, P1_SUCCESS);
     TEST(waitPid, p3Pid);
@@ -68,7 +67,5 @@ void test_setup(int argc, char **argv) {
 
 void test_cleanup(int argc, char **argv) {
     DeleteAllDisks();
-    if (passed) {
-        USLOSS_Console("TEST PASSED.\n");
-    }
 }
+void finish(int argc, char **argv) {}

@@ -1,6 +1,12 @@
 
 /*
  * test_sleep.c
+ *
+ * Creates NUM_SLEEPERS children that sleep for 0-9 seconds. Each sleeper uses the USLOSS clock
+ * to verify that it slept for at least the specified number of seconds. Should take about 9 seconds
+ * to run unless you specify -R on the command line so it uses virtual time in which case it will
+ * finish quite quickly. 
+ *
  */
 
 
@@ -9,13 +15,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <libuser.h>
+#include <sys/time.h>
 
 #include "tester.h"
 #include "phase2Int.h"
 
-#define NUM_SLEEPERS 10
-
-static int passed = FALSE;
+#define NUM_SLEEPERS 40
 
 int Slept(int start, int end) {
     return (end - start) / 1000000;
@@ -35,7 +40,8 @@ int Sleeper(void *arg) {
     rc = Sys_Sleep(seconds);
     assert(rc == 0);
     Sys_GetTimeOfDay(&end);
-    TEST(Slept(start, end) >= seconds, 1);
+    int duration = (end - start) / 1000000;
+    TEST((duration == seconds) || (duration == seconds+1), 1);
     return 0;
 }
 
@@ -66,11 +72,15 @@ P3_Startup(void *arg)
 
 int P2_Startup(void *arg)
 {
-    int rc, waitPid, status, p3Pid;
+    int rc, waitPid = -1, status = 0, p3Pid = -2;
+    struct timeval t;
 
+    gettimeofday(&t, NULL);
+    srandom(t.tv_sec);
     P2ClockInit();
-    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 3, &p3Pid);
+    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 2, &p3Pid);
     TEST(rc, P1_SUCCESS);
+
     rc = P2_Wait(&waitPid, &status);
     TEST(rc, P1_SUCCESS);
     TEST(waitPid, p3Pid);
@@ -84,9 +94,6 @@ void test_setup(int argc, char **argv) {
     // Do nothing.
 }
 
-void test_cleanup(int argc, char **argv) {
-    if (passed) {
-        USLOSS_Console("TEST PASSED.\n");
-    }
-}
+void test_cleanup(int argc, char **argv) {}
 
+void finish(int argc, char **argv) {}

@@ -66,10 +66,10 @@ DiskDriver(void *arg)
 /*
  * P2_DiskRead
  *
- * Reads the specified number of sectors from the disk starting at the specified track and sector.
+ * Reads the specified number of sectors from the disk starting at the specified sector.
  */
 int 
-P2_DiskRead(int unit, int track, int first, int sectors, void *buffer) 
+P2_DiskRead(int unit, int first, int sectors, void *buffer) 
 {
     // give request to the proper device driver
     // wait until device driver completes the request

@@ -34,12 +34,13 @@ int P2_Startup(void *arg)
     // initialize clock and disk drivers
 
     debug2("starting\n");
-    rc = P2_SetSyscallHandler(SYS_SEMCREATE, CreateStub);
+    rc = P2_SetSyscallHandler(SYS_LOCKCREATE, CreateStub);
     assert(rc == P1_SUCCESS);
     // ...
-    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 3, &pid);
+    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 2, &pid);
     assert(rc == P1_SUCCESS);
-    // ...
+    
+    // wait for P2_Spawn to terminate
 
     // shut down clock and disk drivers
 
@@ -49,7 +50,6 @@ int P2_Startup(void *arg)
 static void
 CreateStub(USLOSS_Sysargs *sysargs)
 {
-    sysargs->arg4 = (void *) P1_SemCreate((char *) sysargs->arg2, (int) sysargs->arg1, 
-                                          (void *) &sysargs->arg1);
+    sysargs->arg4 = (void *) P1_LockCreate((char *) sysargs->arg1, (void *) &sysargs->arg1);
 }
 

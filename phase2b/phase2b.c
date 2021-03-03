@@ -58,7 +58,7 @@ ClockDriver(void *arg)
         int now;
 
         // wait for the next interrupt
-        rc = P1_WaitDevice(USLOSS_CLOCK_DEV, 0, &now);
+        rc = P1_DeviceWait(USLOSS_CLOCK_DEV, 0, &now);
         if (rc == P1_WAIT_ABORTED) {
             break;
         }

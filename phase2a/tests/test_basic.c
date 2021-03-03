@@ -1,7 +1,7 @@
 /*
  * test_basic.c
  *
- * Tests basic functionality of all system calls.
+ * Comprehensive test of basic functionality. Doesn't test everything, but tests quite a bit.
  *
  */
 
@@ -15,9 +15,7 @@
 #include "tester.h"
 #include "phase2Int.h"
 
-static int passed = FALSE;
-
-static int childPid, p2Pid, p3Pid;
+static int childPid = -1, p2Pid = -1, p3Pid = -1;
 
 /*
  * CheckName
@@ -31,7 +29,7 @@ static void CheckName(char *name, int pid)
     P1_ProcInfo info;
 
     int rc = Sys_GetProcInfo(pid, &info);
-    TEST(rc, P1_SUCCESS);
+    TEST_RC(rc, P1_SUCCESS);
     TEST(strcmp(info.name, name), 0);
 }
 
@@ -44,16 +42,23 @@ static void CheckName(char *name, int pid)
 
 int P2_Startup(void *arg)
 {
-    int rc, waitPid, status;
+    int rc, waitPid = 0, status = 0;
 
     P2ProcInit();
     p2Pid = P1_GetPid();
-    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 3, &p3Pid);
-    TEST(rc, P1_SUCCESS);
+    rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 2, &p3Pid);
+    TEST_RC(rc, P1_SUCCESS);
+
     rc = P2_Wait(&waitPid, &status);
-    TEST(rc, P1_SUCCESS);
-    TEST(status, 11);
+    TEST_RC(rc, P1_SUCCESS);
     TEST(waitPid, p3Pid);
+    TEST(status, 2048);
+
+    // should fail because we were not spawned.
+
+    rc = P2_Terminate(16);
+    TEST_RC(rc, P2_NOT_SPAWNED);
+
     PASSED();
     return 0;
 }
@@ -62,13 +67,14 @@ int P2_Startup(void *arg)
  * Child
  *
  * Checks its pid and those of its ancestors.
- * Tests Sys_GetPID.
+ * Tests Sys_GetPid.
  */
 
 int Child(void *arg) {
     int pid;
 
-    Sys_GetPID(&pid);
+    int rc = Sys_GetPid(&pid);
+    TEST_RC(rc, P1_SUCCESS);
     TEST(pid, childPid);
     CheckName("Child", childPid);
     CheckName("P2_Startup", p2Pid);
@@ -87,17 +93,33 @@ int P3_Startup(void *arg) {
     int rc, waitPid, status;
     int start, finish;
 
+    // verify we are in user mode.
+    int mode = USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE;
+    TEST(mode, 0); // 0 is user mode
+
     Sys_GetTimeOfDay(&start);
 
     rc = Sys_Spawn("Child", Child, (void *) 42, USLOSS_MIN_STACK, 3, &childPid);
-    TEST(rc, P1_SUCCESS);
+    TEST_RC(rc, P1_SUCCESS);
 
     rc = Sys_Wait(&waitPid, &status);
-    TEST(rc, P1_SUCCESS);
+    TEST_RC(rc, P1_SUCCESS);
     TEST(status, 42);
     TEST(waitPid, childPid);
+
+    // verify it's later than it was before
     Sys_GetTimeOfDay(&finish);
     TEST(finish > start, 1);
+
+    // test a system call w/out a handler
+    rc = Sys_Protect(0, 0);
+    TEST_RC(rc, P2_INVALID_SYSCALL);
+
+    // should not be able to call a kernel-level 
+    // should cause an illegal instruction and
+    // we should terminate with status 2048
+    P1_Quit(5);
+    // should not get here
     Sys_Terminate(11);
     // does not get here
     return 0;
@@ -108,7 +130,6 @@ void test_setup(int argc, char **argv) {
 }
 
 void test_cleanup(int argc, char **argv) {
-    if (passed) {
-        USLOSS_Console("TEST PASSED.\n");
-    }
 }
+
+void finish(int argc, char **argv) {}
