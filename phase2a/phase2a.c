@@ -24,17 +24,7 @@ static void SpawnStub(USLOSS_Sysargs *sysargs);
 static void 
 IllegalHandler(int type, void *arg) 
 {
-    P1_ProcInfo info;
-    assert(type == USLOSS_ILLEGAL_INT);
-
-    int pid = P1_GetPid();
-    int rc = P1_GetProcInfo(pid, &info);
-    assert(rc == P1_SUCCESS);
-    if (info.tag == TAG_KERNEL) {
-        P1_Quit(1024);
-    } else {
-        P2_Terminate(2048);
-    }
+    // do something here
 }
 
 /*
@@ -47,7 +37,9 @@ IllegalHandler(int type, void *arg)
 static void 
 SyscallHandler(int type, void *arg) 
 {
-
+    USLOSS_Sysargs *sysargs = (USLOSS_Sysargs *) arg;
+    // call the proper handler for the system call.
+    sysargs->arg4 = (void *) P2_INVALID_SYSCALL;
 }
 
 
@@ -81,7 +73,6 @@ P2ProcInit(void)
 int
 P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
 {
-
     return P1_SUCCESS;
 }
 
@@ -94,6 +85,7 @@ P2_SetSyscallHandler(unsigned int number, void (*handler)(USLOSS_Sysargs *args))
 int 
 P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priority, int *pid) 
 {
+    // do something here
     return P1_SUCCESS;
 }
 
@@ -107,6 +99,7 @@ P2_Spawn(char *name, int(*func)(void *arg), void *arg, int stackSize, int priori
 int 
 P2_Wait(int *pid, int *status) 
 {
+    // do something here
     return P1_SUCCESS;
 }
 
@@ -117,9 +110,11 @@ P2_Wait(int *pid, int *status)
  *
  */
 
-void 
+int 
 P2_Terminate(int status) 
 {
+    // do something here
+    return P1_SUCCESS;
 
 }
 
@@ -145,9 +140,3 @@ SpawnStub(USLOSS_Sysargs *sysargs)
     }
     sysargs->arg4 = (void *) rc;
 }
-
-
-
-
-
-
