@@ -22,10 +22,6 @@
 
 #define NUM_SLEEPERS 40
 
-int Slept(int start, int end) {
-    return (end - start) / 1000000;
-}
-
 /*
  * Sleeper
  *
@@ -38,10 +34,12 @@ int Sleeper(void *arg) {
     int seconds = (int) arg;
     Sys_GetTimeOfDay(&start);
     rc = Sys_Sleep(seconds);
-    assert(rc == 0);
+    TEST_RC(rc, P1_SUCCESS);
     Sys_GetTimeOfDay(&end);
-    int duration = (end - start) / 1000000;
-    TEST((duration == seconds) || (duration == seconds+1), 1);
+    int ms = seconds * 1000;
+    int duration = (end - start) / 1000; // duration in ms
+    // should be no more than 100ms longer than the specified duration and not less
+    TEST((duration >= ms) && (duration <= ms+100), 1);
     return 0;
 }
 
@@ -60,12 +58,12 @@ P3_Startup(void *arg)
     for (int i = 0; i < NUM_SLEEPERS; i++) {
         int duration = random() % 10;
         rc = Sys_Spawn(MakeName("Sleeper", i), Sleeper, (void *) duration, USLOSS_MIN_STACK, 5, &pid);
-        TEST(rc, P1_SUCCESS);
+        TEST_RC(rc, P1_SUCCESS);
     }
 
     for (int i = 0; i < NUM_SLEEPERS; i++) {
         rc = Sys_Wait(&pid, &status);
-        TEST(rc, P1_SUCCESS);
+        TEST_RC(rc, P1_SUCCESS);
     }
     return 11;
 }
@@ -79,10 +77,10 @@ int P2_Startup(void *arg)
     srandom(t.tv_sec);
     P2ClockInit();
     rc = P2_Spawn("P3_Startup", P3_Startup, NULL, 4*USLOSS_MIN_STACK, 2, &p3Pid);
-    TEST(rc, P1_SUCCESS);
+    TEST_RC(rc, P1_SUCCESS);
 
     rc = P2_Wait(&waitPid, &status);
-    TEST(rc, P1_SUCCESS);
+    TEST_RC(rc, P1_SUCCESS);
     TEST(waitPid, p3Pid);
     TEST(status, 11);
     P2ClockShutdown();
