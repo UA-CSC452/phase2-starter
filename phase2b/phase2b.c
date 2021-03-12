@@ -12,6 +12,8 @@
 static int      ClockDriver(void *);
 static void     SleepStub(USLOSS_Sysargs *sysargs);
 
+static int      now; // current time
+
 /*
  * P2ClockInit
  *
@@ -55,7 +57,6 @@ ClockDriver(void *arg)
 
     while(1) {
         int rc;
-        int now;
 
         // wait for the next interrupt
         rc = P1_DeviceWait(USLOSS_CLOCK_DEV, 0, &now);
@@ -77,8 +78,9 @@ ClockDriver(void *arg)
 int 
 P2_Sleep(int seconds) 
 {
+    // update current time and determine wakeup time
     // add current process to data structure of sleepers
-    // wait until sleep is complete
+    // wait until it's wakeup time
     return P1_SUCCESS;
 }
 
