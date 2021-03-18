@@ -38,8 +38,8 @@ int Sleeper(void *arg) {
     Sys_GetTimeOfDay(&end);
     int ms = seconds * 1000;
     int duration = (end - start) / 1000; // duration in ms
-    // should be no more than 100ms longer than the specified duration and not less
-    TEST((duration >= ms) && (duration <= ms+100), 1);
+    // should be no more than 200ms longer than the specified duration and not less
+    TEST((duration >= ms) && (duration <= ms+200), 1);
     return 0;
 }
 
