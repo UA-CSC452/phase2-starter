@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <phase1.h>
+#include <fcntl.h>
 
 #ifndef PHASE1A
 static char *states[] = {"Free", "Run", "Ready", "Quit", "Block", "Join"};
@@ -96,10 +97,10 @@ MakeName(char *prefix, int suffix)
 }
 
 static void
-DeleteDisk(int disk)
+DeleteDisk(int unit)
 {
     char path[30];
-    snprintf(path, sizeof(path), "disk%d", disk);
+    snprintf(path, sizeof(path), "disk%d", unit);
     unlink(path);
 }
 
@@ -110,6 +111,15 @@ DeleteAllDisks(void)
         DeleteDisk(i);
     }
 }
+
+static int
+OpenDisk(int unit)
+{
+    char path[30];
+    snprintf(path, sizeof(path), "disk%d", unit);
+    return open(path, O_RDWR);
+}
+
 #define PASSED_MSG() { \
     USLOSS_Console("TEST PASSED.\n"); \
 }
