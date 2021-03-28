@@ -127,7 +127,7 @@ void test_setup(int argc, char **argv) {
 void test_cleanup(int argc, char **argv) {
     DeleteAllDisks();
     if (passed) {
-        PASSED();
+        PASSED_FINISH();
     }
 }
 void finish(int argc, char **argv) {}
