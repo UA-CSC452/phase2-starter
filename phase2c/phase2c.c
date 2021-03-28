@@ -68,7 +68,7 @@ P2DiskShutdown(void)
  * Kernel process that manages a disk device and services disk I/O requests from other processes.
  * Note that it may require several disk operations to service a single I/O request. A disk
  * operation is performed by sending a request of type USLOSS_DeviceRequest to the disk via
- * USLOSS_DeviceOutput, then waiting for the operation to finish via P1_WaitDevice. The status
+ * USLOSS_DeviceOutput, then waiting for the operation to finish via P1_DeviceWait. The status
  * returned by P1_WaitDevice will tell you if the operation was successful or not.
  */
 static int 
