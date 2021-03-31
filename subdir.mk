@@ -138,7 +138,7 @@ tests: $(TOUTS)
 % : %.o
 
 %.out: %
-	./$< 1> $@ 2>&1
+	./$< $(TESTFLAGS) 1> $@ 2>&1
 
 $(TESTS):   %: $(TARGET) %.o $(STUBS)
 	$(LD) $(LDFLAGS) -o $@ $@.o $(STUBS) $(LIBFLAGS)
