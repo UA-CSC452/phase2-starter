@@ -114,6 +114,8 @@ else
 	LIBFLAGS = -Wl,--start-group $(LIBS) -Wl,--end-group
 endif
 
+.PHONY: $(PHASE) tests
+
 %.d: %.c
 	$(CC) -c $(CFLAGS) -MM -MF $@ $<
 
@@ -131,11 +133,6 @@ install: $(TARGET)
 
 .NOTPARALLEL: tests
 tests: $(TOUTS)
-
-# Remove implicit rules so that "make phase1" doesn't try to build it from phase1.c or phase1.o
-% : %.c
-
-% : %.o
 
 %.out: %
 	./$< $(TESTFLAGS) 1> $@ 2>&1
